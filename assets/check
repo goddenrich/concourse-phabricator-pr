@@ -8,47 +8,38 @@ exec 1>&2 # redirect all output to stderr for logging
 
 source $(dirname $0)/common.sh
 
-# for jq
 PATH=/usr/local/bin:$PATH
 
-payload=$TMPDIR/git-resource-request
+payload=$TMPDIR/phabricator-resource-request
 
 cat > $payload <&0
 
-load_pubkey $payload
-configure_https_tunnel $payload
-configure_git_ssl_verification $payload
-configure_credentials $payload
 
-uri=$(jq -r '.source.uri // ""' < $payload)
-# branch=$(jq -r '.source.branch // ""' < $payload)
-# paths="$(jq -r '(.source.paths // ["."])[]' < $payload)" # those "'s are important
-# ignore_paths="$(jq -r '":!" + (.source.ignore_paths // [])[]' < $payload)" # these ones too
-# tag_filter=$(jq -r '.source.tag_filter // ""' < $payload)
-tag_filter='phabricator/diff/*'
-git_config_payload=$(jq -r '.source.git_config // []' < $payload)
+conduit_uri=$(jq -r '.source.uri // ""' < $payload)
 ref=$(jq -r '.version.ref // ""' < $payload)
-# skip_ci_disabled=$(jq -r '.source.disable_ci_skip // false' < $payload)
+conduit_token=$(jq -r '.source.token // ""' < $payload)
 
-configure_git_global "${git_config_payload}"
-
-destination=$TMPDIR/git-resource-repo-cache
-
-if [ -d $destination ]; then
-  cd $destination
-  git reset --hard FETCH_HEAD
-else
-  git clone --single-branch $uri $destination --depth 1
-  cd $destination
+token_arg=""
+if [ -n "$conduit_token" ]; then
+  token_arg='--conduit_token ${conduit_token}'
 fi
-git fetch --tags
 
+get_latest_diff () {
+  echo '{"limit":1}' | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
+}
 
-  {
-    if [ -n "$ref" ]; then
-      ref_for_search=$(sed 's#/#\\/#g' <<< $ref)
-      git tag --list "$tag_filter" --list --sort=taggerdate | sed -ne "/$ref_for_search/,$ p"
-    else
-      git tag --list "$tag_filter" --sort=taggerdate | tail -1
-    fi
-  } | jq -R '.' | jq -s "map({ref: .})" >&3
+# TODO(rgodden) need to add the ref diff to end then invert the order
+get_diffs_since_including () {
+  search_diff=$1
+  echo "{\"before\": $search_diff}" | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
+}
+
+format_for_concourse() {
+  jq '.response.data[] | {ref: .id}'
+}
+
+if [ -n "$ref" ]; then
+  get_diffs_since_including "$ref" | format_for_concourse >&3
+else
+  get_latest_diff | format_for_concourse >&3
+fi
