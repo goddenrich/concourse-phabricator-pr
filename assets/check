@@ -28,10 +28,10 @@ get_latest_diff () {
   echo '{"limit":1}' | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
 }
 
-# TODO(rgodden) need to add the ref diff to end then invert the order
+# TODO(rgodden) need to add the ref diff to begining
 get_diffs_since_including () {
   search_diff=$1
-  echo "{\"before\": $search_diff}" | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
+  echo "{\"after\": $search_diff, \"order\": [\"-id\"]}" | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
 }
 
 format_for_concourse() {
