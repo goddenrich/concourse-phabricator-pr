@@ -19,27 +19,4 @@ conduit_uri=$(jq -r '.source.uri // ""' < $payload)
 diff=$(jq -r '.version.diff // ""' < $payload)
 conduit_token=$(jq -r '.source.token // ""' < $payload)
 
-# token_arg=""
-# if [ -n "$conduit_token" ]; then
-#   token_arg='--conduit_token ${conduit_token}'
-# fi
-#
-# get_latest_diff () {
-#   echo '{"limit":1}' | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
-# }
-#
-# get_diffs_since_including () {
-#   search_diff=$1
-#   echo "{\"after\": $((search_diff-1)), \"order\": [\"-id\"]}" | arc call-conduit --conduit-uri "$conduit_uri" differential.diff.search $token_arg
-# }
-#
-# format_for_concourse() {
-#   jq '.response.data[] | {diff: .id}'
-# }
-#
-# if [ -n "$diff" ]; then
-#   get_diffs_since_including "$diff" | format_for_concourse >&3
-# else
-#   get_latest_diff | format_for_concourse >&3
-# fi
 $(dirname $0)/commands/check.py $1 >&3 < $payload
