@@ -1,9 +1,24 @@
-FROM alpine:latest AS resource
+FROM alpine:latest as resource
 
-RUN apt-get install git php5-cli php-curl
-RUN git clone https://secure.phabricator.com/source/libphutil.git
-RUN git clone https://secure.phabricator.com/diffusion/ARC/arcanist.git
-COPY arcanist/bin/arc /usr/local/bin/
+RUN set -ex; \
+  apk add --update \
+  ca-certificates \
+  curl \
+  git \
+  jq \
+  openssh-client \
+  ; \
+  rm -rf /var/cache/apk/*;
+
+RUN apk add --no-cache python3 && \
+    python3 -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    pip3 install --upgrade pip setuptools && \
+    if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi && \
+    if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+    rm -r /root/.cache
+
+RUN pip install phabricator
 
 RUN git config --global user.email "git@localhost"
 RUN git config --global user.name "git"
@@ -11,8 +26,4 @@ RUN git config --global user.name "git"
 ADD assets/ /opt/resource/
 RUN chmod +x /opt/resource/*
 
-FROM resource AS tests
-ADD test/ /tests
-RUN /tests/all.sh
-
-FROM resource
+RUN echo '{"source": {"uri":"https://c4science.ch/", "token": "cli-uu36lofw44npy374a3wgfbi3num7"}, "version": {"diff": 907}}' | python3 /opt/resource/commands/check.py | jq
