@@ -89,4 +89,4 @@ if __name__ == "__main__":
     phab = get_phabricator(payload)
     last_checked_diff = get_last_diff_checked(payload)
     new_versions = get_new_versions(last_checked_diff, phab)
-    print(new_versions)
+    print(json.dumps(new_versions))
