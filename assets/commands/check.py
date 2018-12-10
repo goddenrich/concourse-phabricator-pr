@@ -3,16 +3,17 @@ import sys
 import json
 
 def get_value_from_payload(value, payload, field):
-    try:
-        return payload[field][value]
-    except KeyError:
-        raise KeyError(f'{value} not found')
+    if payload:
+        try:
+            return payload[field][value] if payload[field] else None
+        except KeyError:
+            raise KeyError(f'{value} not found')
 
 def get_token(payload):
-    return get_value_from_payload('token', payload, 'source')
+    return get_value_from_payload('conduit_token', payload, 'source')
 
-def get_uri(payload):
-    return get_value_from_payload('uri', payload, 'source')
+def get_conduit_uri(payload):
+    return get_value_from_payload('conduit_uri', payload, 'source')
 
 def get_last_diff_checked(payload):
     try:
@@ -21,7 +22,7 @@ def get_last_diff_checked(payload):
         return None
 
 def get_diff_id(diff):
-    return diff.get('id')
+    return str(diff.get('id'))
 
 def get_rev_id(revision):
     return "D" + str(revision.get("id")) if revision else None
@@ -62,13 +63,13 @@ def get_latest_diff_and_revision(phab):
     latest_diff_revision = get_revisions_from_diffs(latest_diff, phab)
     return latest_diff, latest_diff_revision
 
-def get_diffs_and_revisions_since(diff, phab):
-    new_diffs = phab.differential.diff.search(order=["-id"], after=diff-1).get('data')
+def get_diffs_and_revisions_since(diff_id, phab):
+    new_diffs = phab.differential.diff.search(order=["-id"], after=int(diff_id)-1).get('data')
     new_diffs_revisions = get_revisions_from_diffs(new_diffs, phab)
     return new_diffs, new_diffs_revisions
 
 def get_phabricator(payload):
-    uri = get_uri(payload)
+    uri = get_conduit_uri(payload)
     uri = uri if uri.endswith("/") else uri + "/"
     api_uri = uri if uri.endswith("api/") else uri + "api/"
     token = get_token(payload)
