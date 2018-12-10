@@ -8,14 +8,15 @@ exec 1>&2 # redirect all output to stderr for logging
 
 source $(dirname $0)/common.sh
 
+# for jq
 PATH=/usr/local/bin:$PATH
 
-payload=$TMPDIR/phabricator-resource-request
+payload=$TMPDIR/phabricator-pr-resource-request
 
 cat > $payload <&0
 
 
-conduit_uri=$(jq -r '.source.uri // ""' < $payload)
+conduit_uri=$(jq -r '.source.conduit_uri // ""' < $payload)
 diff=$(jq -r '.version.diff // ""' < $payload)
 conduit_token=$(jq -r '.source.token // ""' < $payload)
 
