@@ -32,10 +32,11 @@ configure_git_ssl_verification $payload
 configure_credentials $payload
 
 repo_uri=$(jq -r '.source.repo_uri // ""' < $payload)
+depth=$(jq -r '(.params.depth // 0)' < $payload)
+
 diff=$(jq -r '.version.diff // 0' < $payload)
 version=$(jq -r '.version' < $payload)
 base=$(jq -r '.version.base // "HEAD"' < $payload)
-depth=$(jq -r '(.params.depth // 0)' < $payload)
 
 configure_git_global "${git_config_payload}"
 
