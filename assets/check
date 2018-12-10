@@ -20,4 +20,4 @@ conduit_uri=$(jq -r '.source.conduit_uri // ""' < $payload)
 diff=$(jq -r '.version.diff // ""' < $payload)
 conduit_token=$(jq -r '.source.token // ""' < $payload)
 
-$(dirname $0)/commands/check.py $1 >&3 < $payload
+python $(dirname $0)/commands/check.py >&3 < $payload
