@@ -2,7 +2,7 @@ export TMPDIR=${TMPDIR:-/tmp}
 export GIT_CRYPT_KEY_PATH=~/git-crypt.key
 
 load_pubkey() {
-  local private_key_path=$TMPDIR/git-resource-private-key
+  local private_key_path=$TMPDIR/phabricator-pr-resource-private-key
 
   (jq -r '.source.private_key // empty' < $1) > $private_key_path
 
@@ -145,7 +145,7 @@ configure_credentials() {
 }
 
 load_git_crypt_key() {
-  local git_crypt_tmp_key_path=$TMPDIR/git-resource-git-crypt-key
+  local git_crypt_tmp_key_path=$TMPDIR/phabricator-pr-resource-git-crypt-key
 
   (jq -r '.source.git_crypt_key // empty' < $1) > $git_crypt_tmp_key_path
 
