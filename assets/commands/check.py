@@ -29,6 +29,11 @@ def get_rev_id(revision):
 def get_rev_title(revision):
     return revision.get('fields').get('title') if revision else None
 
+def get_base(diff):
+    for ref in diff.get('fields').get('refs'):
+        if ref.get('type') == "base":
+            return ref.get('identifier')
+
 def get_branch(diff):
     for ref in diff.get('fields').get('refs'):
         if ref.get('type') == "branch":
@@ -75,6 +80,7 @@ def concourse_version(diff, rev):
     return {
         'diff': get_diff_id(diff),
         'branch': get_branch(diff),
+        'base': get_base(diff),
         'rev': get_rev_id(rev),
         'revisionName': get_rev_title(rev)
     }
