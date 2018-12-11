@@ -69,9 +69,7 @@ def get_diffs_and_revisions_since(diff_id, phab):
     return new_diffs, new_diffs_revisions
 
 def get_phabricator(payload):
-    uri = get_conduit_uri(payload)
-    uri = uri if uri.endswith("/") else uri + "/"
-    api_uri = uri if uri.endswith("api/") else uri + "api/"
+    api_uri = get_conduit_uri(payload)
     token = get_token(payload)
     phab = Phabricator(host=api_uri, token=token)
     phab.update_interfaces()
