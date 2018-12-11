@@ -153,3 +153,10 @@ load_git_crypt_key() {
       cat $git_crypt_tmp_key_path | tr ' ' '\n' | base64 -d > $GIT_CRYPT_KEY_PATH
   fi
 }
+
+arc_install_certificate() {
+  local conduit_token=$(jq -r '.source.conduit_token // ""' < $1)
+  local conduit_uri=$(jq -r '.source.conduit_uri // ""' < $1)
+  echo "{\"hosts\": {\"$conduit_uri\": {\"token\": \"$conduit_token\"}}}" | jq -r > "$2"
+  chmod 600 "$2"
+}
