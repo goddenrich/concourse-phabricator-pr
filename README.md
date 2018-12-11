@@ -1,7 +1,15 @@
-# phabricator-pr-resource
+# Phabricator-pr-resource
 
 Tracks the diffs created as part of a revision in [phabricator](https://secure.phabricator.com).
 
+# Deploying to concourse
+
+resource_types:
+- name: phabricator-pr
+  type: docker-image
+  source:
+    repository: goddenrich/phabricator-pr-resource
+    tag: latest
 
 ## Source Configuration
 
@@ -51,9 +59,16 @@ Tracks the diffs created as part of a revision in [phabricator](https://secure.p
 Resource configuration for a private repo with an HTTPS proxy:
 
 ``` yaml
-resources:
+resource_types:
 - name: phabricator-pr
-  type: git
+  type: docker-image
+  source:
+    repository: goddenrich/phabricator-pr-resource
+    tag: latest
+
+resources:
+- name: pr
+  type: phabricator-pr
   source:
     conduit_uri: https://secure.phabricator.com/
     conduit_toke: secret-token-xxxxxx
@@ -77,7 +92,7 @@ resources:
 Create a branch with the patch of the diff:
 
 ``` yaml
-- get: phabricator-pr
+- get: pr
 ```
 
 ## Behavior
