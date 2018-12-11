@@ -1,4 +1,4 @@
-FROM alpine:latest as tunnelbuilder
+FROM php:5.6-cli-alpine3.8 as tunnelbuilder
 RUN apk --no-cache add git make gcc g++ libressl-dev
 
 WORKDIR /root
@@ -7,7 +7,7 @@ RUN git clone https://github.com/proxytunnel/proxytunnel.git
 WORKDIR /root/proxytunnel
 RUN make
 
-FROM alpine:latest as resource
+FROM php:5.6-cli-alpine3.8 as resource
 
 RUN apk --no-cache add \
   bash \
@@ -28,8 +28,7 @@ RUN apk --no-cache add \
   libstdc++ \
   ca-certificates \
   openssh-client \
-  vim \
-  php
+  vim 
 
 RUN apk add --no-cache python3 && \
     python3 -m ensurepip && \
@@ -43,13 +42,9 @@ COPY --from=tunnelbuilder /root/proxytunnel/proxytunnel proxytunnel
 
 RUN /usr/bin/install -c proxytunnel /usr/bin/proxytunnel
 
-# install arc
-RUN mkdir /phab_utils/
-RUN cd /phab_utils/
 RUN git clone https://github.com/phacility/libphutil.git
 RUN git clone https://github.com/phacility/arcanist.git
-RUN export PATH="$PATH:/phab_utils/arcanist/bin/"
-RUN cd -
+ENV PATH $PATH:/arcanist/bin/
 
 RUN pip install phabricator
 
