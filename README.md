@@ -2,14 +2,16 @@
 
 Tracks the diffs created as part of a revision in [phabricator](https://secure.phabricator.com).
 
-# Deploying to concourse
+## Deploying to concourse
 
+```
 resource_types:
 - name: phabricator-pr
   type: docker-image
   source:
     repository: goddenrich/phabricator-pr-resource
     tag: latest
+```
 
 ## Source Configuration
 
