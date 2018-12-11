@@ -51,15 +51,10 @@ if test "$depth" -gt 0 2> /dev/null; then
   depthflag="--depth $depth"
 fi
 
+arc_install_certificate $payload ".arcrc"
 
-if [ -d $destination ]; then
-  cd $destination
-  git reset --hard FETCH_HEAD
-  git pull
-else
-  git clone --single-branch $repo_uri $destination $depthflag
-  cd $destination
-fi
+git clone --single-branch $repo_uri $destination $depthflag
+cd $destination
 
 concourse_git_resource__depth="$depth" \
   "$bin_dir"/deepen_shallow_clone_until_ref_is_found "$base"
