@@ -27,9 +27,6 @@ def get_diff_id(diff):
 def get_rev_id(revision):
     return "D" + str(revision.get("id")) if revision else None
 
-def get_rev_title(revision):
-    return revision.get('fields').get('title') if revision else None
-
 def get_base(diff):
     for ref in diff.get('fields').get('refs'):
         if ref.get('type') == "base":
@@ -81,7 +78,6 @@ def concourse_version(diff, rev):
         'branch': get_branch(diff),
         'base': get_base(diff),
         'rev': get_rev_id(rev),
-        'revisionName': get_rev_title(rev)
     }
 
 def get_new_versions(last_checked_diff, phab):
