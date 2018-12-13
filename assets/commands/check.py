@@ -82,7 +82,7 @@ def concourse_version(diff, rev):
 
 def get_new_versions(last_checked_diff, phab):
     new_diffs, revisions = get_new_diffs_and_revisions_since(last_checked_diff, phab)
-    return [concourse_version(diff, rev) for diff, rev in zip(new_diffs, revisions)]
+    return [concourse_version(diff, rev) for diff, rev in zip(new_diffs, revisions) if rev]
 
 
 if __name__ == "__main__":
