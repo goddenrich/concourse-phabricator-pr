@@ -2,6 +2,5 @@
 
 set -e
 
-exit 1
-
-echo -e '\e[32mall tests passed!\e[0m'
+echo -e 'no put tests run put is no-op'
+echo -e "--------------------------------------------"

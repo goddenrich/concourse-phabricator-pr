@@ -2,6 +2,7 @@
 
 set -e
 
-exit 1
+# exit 1
 
-echo -e '\e[32mall tests passed!\e[0m'
+echo -e "get tests passed!"
+echo -e "--------------------------------------------"

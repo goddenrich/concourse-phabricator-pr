@@ -2,6 +2,7 @@
 
 set -e
 
-exit 1
+python /opt/resource/commands/test_check.py
 
-echo -e '\e[32mall tests passed!\e[0m'
+echo -e "check tests passed!"
+echo -e "--------------------------------------------"

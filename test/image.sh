@@ -2,6 +2,17 @@
 
 set -e
 
-exit 1
 
-echo -e '\e[32mall tests passed!\e[0m'
+it_has_installed_proxytunnel() {
+  test -x /usr/bin/proxytunnel
+}
+
+it_cleans_up_installation_artifacts() {
+  test ! -d /root/proxytunnel
+}
+
+it_has_installed_proxytunnel
+it_cleans_up_installation_artifacts
+
+echo -e "image tests passed!"
+echo -e "--------------------------------------------"

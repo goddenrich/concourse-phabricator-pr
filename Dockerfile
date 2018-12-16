@@ -213,4 +213,9 @@ RUN             rm -rf \
 ADD assets/ /opt/resource/
 RUN chmod +x /opt/resource/*
 
+FROM resource AS tests
+ADD test/ /tests
+RUN chmod +x /tests/*
+RUN /tests/all.sh
+
 FROM resource
