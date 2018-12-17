@@ -49,21 +49,26 @@ def get_revision_phid(diff):
 def get_revision_phids(diffs):
     return [get_revision_phid(diff) for diff in diffs]
 
-def get_new_diffs_and_revisions_since(diff, phab):
+def get_new_diffs_and_revisions_since(diff, repo_PHID, phab):
     if diff:
-        return get_diffs_and_revisions_since(diff, phab)
+        return get_diffs_and_revisions_since(diff, repo_PHID, phab)
     else:
-        return get_latest_diff_and_revision(phab)
+        return get_latest_diff_and_revision(phab, repo_PHID)
 
-def get_latest_diff_and_revision(phab):
-    latest_diff = phab.differential.diff.search(limit=1).get('data')
-    latest_diff_revision = get_revisions_from_diffs(latest_diff, phab)
-    return latest_diff, latest_diff_revision
+def get_latest_diff_and_revision(phab, repo_PHID):
+    latest_diffs = phab.differential.diff.search(limit=1).get('data')
+    latest_diff_for_repo = filter_diffs_for_repo(latest_diffs, repo_PHID)  # if latest diff was not for repo return nothing for now
+    latest_diff_revision = get_revisions_from_diffs(latest_diff_for_repo, phab)
+    return latest_diff_for_repo, latest_diff_revision
 
-def get_diffs_and_revisions_since(diff_id, phab):
+def get_diffs_and_revisions_since(diff_id, repo_PHID, phab):
     new_diffs = phab.differential.diff.search(order=["-id"], after=int(diff_id)-1).get('data')
-    new_diffs_revisions = get_revisions_from_diffs(new_diffs, phab)
-    return new_diffs, new_diffs_revisions
+    new_diffs_for_repo = filter_diffs_for_repo(new_diffs, repo_PHID)
+    new_diffs_revisions = get_revisions_from_diffs(new_diffs_for_repo, phab)
+    return new_diffs_for_repo, new_diffs_revisions
+
+def filter_diffs_for_repo(diffs, repo_PHID):
+    return [diff for diff in diffs if diff.get('fields').get('repositoryPHID') == repo_PHID]
 
 def get_phabricator(payload):
     api_uri = get_conduit_uri(payload)
@@ -80,14 +85,21 @@ def concourse_version(diff, rev):
         'rev': get_rev_id(rev),
     }
 
-def get_new_versions(last_checked_diff, phab):
-    new_diffs, revisions = get_new_diffs_and_revisions_since(last_checked_diff, phab)
+def get_new_versions(last_checked_diff, repo_PHID, phab):
+    new_diffs, revisions = get_new_diffs_and_revisions_since(last_checked_diff, repo_PHID, phab)
     return [concourse_version(diff, rev) for diff, rev in zip(new_diffs, revisions) if rev]
 
+def get_repo_PHID(payload, phab):
+    repo_uri = get_repo_uri(payload)
+    return phab.diffusion.repository.search(constraints={'uris':[repo_uri]}).get('data')[0].get('phid')
+   
+def get_repo_uri(payload):
+    return get_value_from_payload('repo_uri', payload, 'source')
 
 if __name__ == "__main__":
     payload = json.loads(input())
     phab = get_phabricator(payload)
     last_checked_diff = get_last_diff_checked(payload)
-    new_versions = get_new_versions(last_checked_diff, phab)
+    repo_PHID = get_repo_PHID(payload, phab)
+    new_versions = get_new_versions(last_checked_diff, repo_PHID, phab)
     print(json.dumps(new_versions))
